@@ -13,7 +13,6 @@
 				></v-text-field>
 
 				<v-spacer></v-spacer>
-
 				<v-btn class="mr-3" color="purple" dark @click="dialogFinished = true">Todo Selesai</v-btn>
 
 				<v-btn color="success" dark @click="dialog = true">Tambah</v-btn>
