@@ -1,7 +1,6 @@
 <template>
 	<v-main class="list">
 		<h3 class="text-h3 font-weight-medium mb-5">To Do List</h3>
-
 		<v-card>
 			<v-card-title>
 				<v-text-field
@@ -13,42 +12,33 @@
 				></v-text-field>
 
 				<v-spacer></v-spacer>
-
 				<v-btn class="mr-3" color="purple" dark @click="dialogFinished = true">Todo Selesai</v-btn>
 
 				<v-btn color="success" dark @click="dialog = true">Tambah</v-btn>
 			</v-card-title>
 
-			<v-data-table :headers="headers" :items="todos" :search="search">
-				<template v-slot:[`item.priority`]="{ item }">
-					<v-chip outlined label :color="getColor(item.priority)" dark>{{ item.priority }} </v-chip>
-				</template>
+			 <v-data-table :headers="headers" :items="todos" :search="search">
+                <template v-slot:[`item.actions`]="{ item }">
+                    <v-btn small class="mr-2" @click="editItem(item)">
+                        edit
+                    </v-btn>
+                    <v-btn small @click="deleteItem(item)">
+                        delete
+                    </v-btn>
+                    <v-spacer></v-spacer>
+                    <v-card v-if="todos.filter((todo) => todo.selected).length > 0" class="mt-5">
+                        <v-card-text>
+                            <ul v-for="(todo, index) in todos.filter((todo) => todo.selected)" :key="index" class="text-sm-left">
+                                <li>{{ todo.task }}</li>
+                            </ul>
 
-				<template v-slot:[`item.actions`]="{ item }">
-					<v-icon color="blue" small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
+                            <v-btn color="red" dark @click="dialogMultiple = true">Hapus Semua</v-btn>
+                        </v-card-text>
+                </v-card>
+            </template>
 
-					<v-icon color="red" small @click="deleteItem(item)">mdi-delete</v-icon>
-				</template>
-
-                <template v-slot:[`item.checkbox`]="{ item }">
-                    <v-checkbox v-model="item.selected"></v-checkbox>
-                </template>
-			</v-data-table>
+            </v-data-table>
 		</v-card>
-
-        <v-card v-if="todos.filter((todo) => todo.selected).length > 0" class="mt-5">
-            <v-card-title>
-                <span class="font-weight-bold text-sm-left">Delete Multiple</span>
-            </v-card-title>
-
-            <v-card-text>
-                <ul v-for="(todo, index) in todos.filter((todo) => todo.selected)" :key="index" class="text-sm-left">
-                    <li>{{ todo.task }}</li>
-                </ul>
-
-                <v-btn color="red" dark @click="dialogMultiple = true">Hapus Semua</v-btn>
-            </v-card-text>
-        </v-card>
 
 		<v-dialog v-model="dialog" persistent max-width="600px">
 			<v-card>
@@ -91,23 +81,6 @@
 			</v-card>
 		</v-dialog>
 
-        <v-dialog v-model="dialogMultiple" persistent max-width="450px">
-            <v-card>
-                <v-card-title>
-                    <span class="headline font-weight-bold">Yakin ingin menghapus?</span>
-                </v-card-title>
-
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-spacer></v-spacer>
-
-                    <v-btn color="green darken-1" text @click="dialogMultiple = false">Tidak</v-btn>
-
-                    <v-btn color="red darken-1" text @click="confirmDeleteMultiple">Ya</v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
-
 		<v-dialog v-model="dialogFinished" persistent max-width="1000px">
 			<v-card>
 				<v-card-title>
@@ -136,6 +109,7 @@
 	</v-main>
 </template>
 
+
 <script>
 export default {
 	name: "List",
@@ -145,7 +119,6 @@ export default {
 			dialog: false,
 			dialogDelete: false,
 			dialogFinished: false,
-            dialogMultiple: false,
 			editIndex: -1,
 			headers: [
 				{
@@ -157,7 +130,6 @@ export default {
 				{ text: "Priority", value: "priority" },
 				{ text: "Note", value: "note" },
 				{ text: "Actions", value: "actions" },
-                { text: "", value: "checkbox" },
 			],
 			finished: [
 				{
@@ -174,19 +146,16 @@ export default {
 					task: "bernafas",
 					priority: "Penting",
 					note: "huffttt",
-                    selected: false,
 				},
 				{
 					task: "nongkrong",
 					priority: "Tidak penting",
 					note: "bersama tman2",
-                    selected: false,
 				},
 				{
 					task: "masak",
 					priority: "Biasa",
 					note: "masak air 500ml",
-                    selected: false,
 				},
 			],
 			finishedTodos: [],
@@ -194,16 +163,15 @@ export default {
 				task: null,
 				priority: null,
 				note: null,
-                selected: false,
 			},
 		};
 	},
 	methods: {
 		save() {
-			if (this.editIndex > -1) 
-                this.todos.splice(this.editIndex, 1, this.formTodo);
+			if (this.editIndex > -1) this.todos.splice(this.editIndex, 1, this.formTodo);
 			else this.todos.push(this.formTodo);
-                this.resetForm();
+
+			this.resetForm();
 			this.dialog = false;
 			this.editIndex = -1;
 		},
@@ -217,16 +185,15 @@ export default {
 				task: null,
 				priority: null,
 				note: null,
-                selected: false,
 			};
 		},
 		editItem(item) {
 			this.editIndex = this.todos.indexOf(item);
+
 			this.formTodo = {
 				task: item.task,
 				priority: item.priority,
 				note: item.note,
-                selected: item.selected,
 			};
 			this.dialog = true;
 		},
@@ -249,12 +216,6 @@ export default {
 			else if (prioritas === "Biasa") return "blue";
 			else return "green";
 		},
-        confirmDeleteMultiple() {
-            this.finishedTodos.push(this.todos.filter((todo) => todo.selected));
-            this.todos = this.todos.filter((todo) => !todo.selected);
-            this.dialogMultiple = false;
-            this.editIndex = -1;
-        },
 	},
 };
 </script>
